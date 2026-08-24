@@ -1,9 +1,12 @@
 package dev.akexorcist.samsung.edge2edge.issue
 
+import android.os.Build
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import dev.akexorcist.samsung.edge2edge.issue.databinding.ActivityMinimalBinding
+import kotlin.math.roundToInt
 
 /**
  * Minimal reproduction of XML-declared padding being zeroed on Samsung devices.
@@ -30,15 +33,33 @@ class MinimalActivity : AppCompatActivity() {
 
     private fun readout() {
         val row = binding.paddedRow
-        val expected = Math.round(16f * resources.displayMetrics.density)
+        val expected = (16f * resources.displayMetrics.density).roundToInt()
+        val cfg = resources.configuration
         val text = buildString {
-            appendLine("row: padLeft=${row.paddingLeft}px padTop=${row.paddingTop}px expected=${expected}px")
-            append(if (row.paddingLeft == expected) "OK" else ">>> REPRODUCED: padding lost")
+            appendLine("MultiWindow          = $isInMultiWindowMode")
+            appendLine("Resolution (px)      = ${windowBoundsPx()}")
+            appendLine("Resolution (dp)      = ${cfg.screenWidthDp} x ${cfg.screenHeightDp}")
+            appendLine("Density              = ${resources.displayMetrics.density}")
+            appendLine("Button Padding")
+            appendLine("  • Left Padding     = ${row.paddingLeft} px")
+            appendLine("  • Top Padding      = ${row.paddingTop} px")
+            appendLine("  • Expected Padding = $expected px")
+            append("Bug Reproduced?      = ${row.paddingLeft != expected}")
         }
-        Log.i(TAG, "[minimal] $text")
+        Log.i(TAG, text)
         binding.tvMinimalReadout.text = text
-        binding.tvMinimalReadout.postDelayed({ readout() }, 1_500)
     }
+
+    private fun windowBoundsPx(): String =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bounds = windowManager.currentWindowMetrics.bounds
+            "${bounds.width()} x ${bounds.height()}"
+        } else {
+            val metrics = DisplayMetrics()
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay.getMetrics(metrics)
+            "${metrics.widthPixels} x ${metrics.heightPixels}"
+        }
 
     companion object {
         const val TAG = "SamsungPaddingLoss"

@@ -3,19 +3,6 @@
     <!--
       ROOT CAUSE: android:fitsSystemWindows="true" set here, at the theme/window level, is what
       triggers the bug - not any view, component, or layout below it.
-
-      This was isolated by bisecting a multi-level production theme chain attribute by attribute.
-      Every other attribute in that chain (statusBarColor, windowDrawsSystemBarBackgrounds,
-      windowLightStatusBar, MaterialComponents vs Material3 vs AppCompat) was removed one at a
-      time and confirmed NOT required; only this one line reproduces it.
-
-      THE FIX: remove android:fitsSystemWindows="true" from the theme, and move inset handling to
-      the modern WindowInsets API (WindowCompat.setDecorFitsSystemWindows plus an
-      OnApplyWindowInsetsListener on the specific views that need to avoid the system bars),
-      scoped to those views rather than the whole window. The legacy theme-level flag is what a
-      Samsung freeform/pop-up window resize corrupts: it zeroes out unrelated views' own
-      XML-declared padding (paddingHorizontal/paddingVertical/padding) elsewhere in the same
-      window.
     -->
     <style name="SamsungPaddingLossTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:fitsSystemWindows">true</item>

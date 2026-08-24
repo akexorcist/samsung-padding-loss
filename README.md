@@ -28,6 +28,7 @@ required — only `android:fitsSystemWindows="true"` at the theme level matters.
 4. Read the on-screen panel, or `adb logcat -s SamsungPaddingLoss`.
 
 ```
+window: multiWindow=true 1104x1408px 415x529dp density=2.625
 row: padLeft=0px padTop=0px expected=34px
 >>> REPRODUCED: padding lost
 ```
@@ -35,9 +36,30 @@ row: padLeft=0px padTop=0px expected=34px
 A window that was never resized (fresh launch, or fullscreen) reads correctly:
 
 ```
+window: multiWindow=false 1812x2176px 691x829dp density=2.625
 row: padLeft=34px padTop=26px expected=34px
 OK
 ```
+
+## Which window modes were tested
+
+`multiWindow` in the readout comes from `Activity.isInMultiWindowMode`, which is `true` for
+both split-screen and freeform/pop-up - Android exposes no public API that distinguishes the
+two. Record which mode you used alongside the reading.
+
+Confirmed to reproduce:
+
+- freeform/pop-up, after a drag-resize
+
+Confirmed **not** to reproduce:
+
+- a window that was never resized (fresh launch, or fullscreen)
+
+Not yet tested - do not assume either way:
+
+- split-screen, after dragging the divider
+- folding/unfolding the device, which also resizes the window
+- rotation, and display-size or font-size changes
 
 ## What was ruled out along the way
 
