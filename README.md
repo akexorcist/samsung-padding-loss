@@ -57,6 +57,10 @@ Remove `android:fitsSystemWindows="true"` from the theme and handle insets with
 `WindowCompat.setDecorFitsSystemWindows` plus an `OnApplyWindowInsetsListener` on the specific
 views that need it.
 
+See the [`fix-example`](https://github.com/akexorcist/samsung-padding-loss/tree/fix-example)
+branch for this repro with the fix applied — it reads `Bug Reproduced? = false` on the same
+device.
+
 ## Build
 
 ```
