@@ -5,20 +5,19 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import dev.akexorcist.samsung.edge2edge.issue.databinding.ActivityMinimalBinding
 import kotlin.math.roundToInt
 
 /**
- * Minimal reproduction of XML-declared padding being zeroed on Samsung devices.
+ * The fixed counterpart of the repro on `main`.
  *
- * `android:fitsSystemWindows="true"` set at the THEME level (see `SamsungPaddingLossTheme`
- * in themes.xml), combined with resizing this window into freeform/pop-up mode on a Samsung
- * device, zeroes the paddingHorizontal/paddingVertical this LinearLayout declares in XML. No
- * custom view, no design-system component, and no RecyclerView are needed - a bare LinearLayout
- * with a TextView reproduces it.
- *
- * Steps: install, launch in a freeform/pop-up window, then drag-resize it. The panel reports
- * OK or REPRODUCED; the same is logged under tag [TAG].
+ * `android:fitsSystemWindows="true"` has been removed from the theme. Insets are applied here
+ * instead, with [WindowCompat.setDecorFitsSystemWindows] plus an [ViewCompat] inset listener on
+ * the root view only. The padded row keeps the paddingHorizontal/paddingVertical it declares in
+ * XML, so the readout reports `Bug Reproduced? = false` on a Samsung device too.
  */
 class MinimalActivity : AppCompatActivity() {
 
@@ -26,9 +25,28 @@ class MinimalActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = ActivityMinimalBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applySystemBarInsets()
         binding.root.post { readout() }
+    }
+
+    /**
+     * Adds the system bar insets on top of the root's XML-declared padding, scoped to this one
+     * view. The declared values are captured first so repeated inset dispatches never accumulate.
+     */
+    private fun applySystemBarInsets() {
+        val root = binding.root
+        val left = root.paddingLeft
+        val top = root.paddingTop
+        val right = root.paddingRight
+        val bottom = root.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(root) { view, windowInsets ->
+            val bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(left + bars.left, top + bars.top, right + bars.right, bottom + bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     private fun readout() {

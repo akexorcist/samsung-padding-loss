@@ -4,6 +4,10 @@ XML-declared padding is silently zeroed on **Samsung** devices when the app wind
 a regular phone — such as a foldable's unfolded inner display. Confirmed on **Galaxy Z Fold 8**,
 **Z Fold 7** and **Galaxy Tab S9**. Stock Android is unaffected.
 
+> **This is the `fix-example` branch** — the same app with the fix applied, so it reads
+> `Bug Reproduced? = false` on an affected Samsung device.
+> [See the full diff against `main`](https://github.com/akexorcist/samsung-padding-loss/compare/main...fix-example).
+
 ## Cause
 
 Two things together:
@@ -53,9 +57,11 @@ Remove `android:fitsSystemWindows="true"` from the theme and handle insets with
 `WindowCompat.setDecorFitsSystemWindows` plus an `OnApplyWindowInsetsListener` on the specific
 views that need it.
 
-The [`fix-example`](https://github.com/akexorcist/samsung-padding-loss/compare/main...fix-example)
-branch has this repro with the fix applied — it reads `Bug Reproduced? = false` on the same
-device. That link opens the full diff against `main`.
+Applied here in two places:
+
+- `res/values/themes.xml` — the theme no longer sets `android:fitsSystemWindows`
+- `MinimalActivity.applySystemBarInsets()` — adds the system bar insets on top of the root's
+  declared padding, scoped to that one view
 
 ## Build
 

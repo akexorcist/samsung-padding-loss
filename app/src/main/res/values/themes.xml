@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--
-      ROOT CAUSE: android:fitsSystemWindows="true" set here, at the theme/window level, is what
-      triggers the bug - not any view, component, or layout below it.
+      THE FIX: android:fitsSystemWindows is gone. Insets are handled in MinimalActivity with
+      WindowCompat.setDecorFitsSystemWindows + an OnApplyWindowInsetsListener on the one view
+      that needs it, instead of the legacy theme-level flag that Samsung mishandles.
     -->
-    <style name="SamsungPaddingLossTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:fitsSystemWindows">true</item>
-    </style>
+    <style name="SamsungPaddingLossTheme" parent="Theme.AppCompat.Light.NoActionBar" />
 </resources>
