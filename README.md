@@ -1,18 +1,23 @@
 # Samsung Padding Loss
 
-XML-declared padding is silently zeroed on Samsung foldables when the app runs on the unfolded
-inner display. Confirmed on **Galaxy Z Fold 8** and **Z Fold 7**.
+XML-declared padding is silently zeroed on **Samsung** devices when the app window is wider than
+a regular phone — such as a foldable's unfolded inner display. Confirmed on **Galaxy Z Fold 8**,
+**Z Fold 7** and **Galaxy Tab S9**. Stock Android is unaffected.
 
 ## Cause
 
-`android:fitsSystemWindows="true"` declared at the **theme/window level**. That alone zeroes
-`android:padding`, `paddingHorizontal` and `paddingVertical` on views inside that window — no
-custom view or design-system component needed, a bare `LinearLayout` reproduces it.
+Two things together:
 
-Bisected from a multi-level theme chain: every other attribute (`statusBarColor`,
-`windowDrawsSystemBarBackgrounds`, `windowLightStatusBar`, MaterialComponents vs Material3 vs
-AppCompat) was ruled out, as were stale density/drawable cache, MotionLayout, Compose
-recomposition, custom components, and window size alone.
+1. `android:fitsSystemWindows="true"` set at the **theme/window level**
+2. A **Samsung** device, with a window **wider than a regular phone**
+
+Either alone is fine — the same build reads correct padding when folded. Together they zero
+`paddingHorizontal` and `paddingVertical` declared in XML. A bare `LinearLayout` is enough; no
+custom view or design-system component involved.
+
+Also ruled out: every other theme attribute (`statusBarColor`, `windowDrawsSystemBarBackgrounds`,
+`windowLightStatusBar`, MaterialComponents/Material3/AppCompat), density and drawable cache,
+MotionLayout, Compose, and custom components.
 
 ## Reproduce
 
@@ -32,8 +37,19 @@ Button Padding
 Bug Reproduced?      = true
 ```
 
-`MultiWindow = false` — fullscreen, no split-screen, pop-up, or resize involved. Folded, the
-same build reads `Left Padding = 42 px` and `Bug Reproduced? = false`.
+`Bug Reproduced? = true` means the row's measured padding no longer matches what its XML
+declares. Folded, the same build reads `false`.
+
+👇 Reproduced on a Samsung device:
+
+![Padding lost on a Galaxy Z Fold 8](image/image_01_samsung.png)
+
+👇 Not reproduced on other devices, e.g. a Google Pixel:
+
+![Padding intact on a Google Pixel](image/image_02_pixel.png)
+
+> **Not foldable-specific.** A Galaxy Tab S9 reproduces it too, in freeform or multi-window,
+> once the window is wider than a regular phone.
 
 ## Fix
 
@@ -45,8 +61,6 @@ views that need it.
 
 ```
 ./gradlew :app:assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb logcat -s SamsungPaddingLoss
 ```
 
 ## License
