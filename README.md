@@ -15,10 +15,6 @@ Either alone is fine — the same build reads correct padding when folded. Toget
 `paddingHorizontal` and `paddingVertical` declared in XML. A bare `LinearLayout` is enough; no
 custom view or design-system component involved.
 
-Also ruled out: every other theme attribute (`statusBarColor`, `windowDrawsSystemBarBackgrounds`,
-`windowLightStatusBar`, MaterialComponents/Material3/AppCompat), density and drawable cache,
-MotionLayout, Compose, and custom components.
-
 ## Reproduce
 
 1. Install on a Z Fold 8 or Z Fold 7.
